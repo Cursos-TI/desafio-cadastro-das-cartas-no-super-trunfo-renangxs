@@ -1,86 +1,72 @@
 #include <stdio.h>
-#include <string.h> // Para usar strcspn
+#include <string.h>
 
 struct CartaSuperTrunfo {
-    char estado;               // Letra do estado (A a H)
-    char codigo[5];            // Código da carta (ex: A01, B03)
-    char nomeCidade[50];       // Nome da cidade
-    int populacao;             // População da cidade
-    float area;                // Área da cidade em km²
-    float pib;                 // PIB da cidade (em bilhões de reais)
-    int pontosTuristicos;      // Número de pontos turísticos
-    float densidadePopulacional; // Densidade populacional
-    float pibPerCapita;        // PIB per capita
+    char estado;
+    char codigo[5];
+    char nomeCidade[50];
+    unsigned long int populacao;
+    float area;
+    float pib;
+    int pontosTuristicos;
+    float densidadePopulacional;
+    float pibPerCapita;
+    float superPoder;
 };
 
-// Função para calcular a densidade populacional e o PIB per capita
-void calcularDensidadeEPIB(struct CartaSuperTrunfo *carta) {
-    carta->densidadePopulacional = carta->populacao / carta->area;
-    carta->pibPerCapita = (carta->pib * 1000000000) / carta->populacao;  // PIB per capita em reais
+void calcularAtributos(struct CartaSuperTrunfo *carta) {
+    if (carta->area > 0)
+        carta->densidadePopulacional = carta->populacao / carta->area;
+    else
+        carta->densidadePopulacional = 0;
+
+    if (carta->populacao > 0)
+        carta->pibPerCapita = (carta->pib * 1000000000) / carta->populacao;
+    else
+        carta->pibPerCapita = 0;
+    
+    carta->superPoder = carta->populacao + carta->area + carta->pib + carta->pontosTuristicos + carta->pibPerCapita + (carta->densidadePopulacional > 0 ? 1.0 / carta->densidadePopulacional : 0);
 }
 
 struct CartaSuperTrunfo lerCarta() {
     struct CartaSuperTrunfo carta;
-    
-    // Entrada de dados
     printf("Digite o estado (A a H): ");
     scanf(" %c", &carta.estado);
-
     printf("Digite o código da carta (ex: A01, B03): ");
-    scanf("%s", carta.codigo);
-
+    scanf("%4s", carta.codigo);
     printf("Digite o nome da cidade: ");
-    getchar();  // Consome o caractere de nova linha residual
+    getchar();
     fgets(carta.nomeCidade, sizeof(carta.nomeCidade), stdin);
-    carta.nomeCidade[strcspn(carta.nomeCidade, "\n")] = '\0'; // Remove o '\n' no final
-
+    carta.nomeCidade[strcspn(carta.nomeCidade, "\n")] = '\0';
     printf("Digite a população da cidade: ");
-    scanf("%d", &carta.populacao);
-
-    printf("Digite a área da cidade (em km²): ");
+    scanf("%lu", &carta.populacao);
+    printf("Digite a área da cidade (km²): ");
     scanf("%f", &carta.area);
-
-    printf("Digite o PIB da cidade (em bilhões de reais): ");
+    printf("Digite o PIB da cidade (bilhões de reais): ");
     scanf("%f", &carta.pib);
-
-    printf("Digite o número de pontos turísticos da cidade: ");
+    printf("Digite o número de pontos turísticos: ");
     scanf("%d", &carta.pontosTuristicos);
-
-    // Calculando a densidade e PIB per capita
-    calcularDensidadeEPIB(&carta);
-
+    calcularAtributos(&carta);
     return carta;
 }
 
-struct CartaSuperTrunfo exibirCarta(struct CartaSuperTrunfo carta, int numCarta) {
-    printf("\nCarta %d:\n", numCarta);
-    printf("Estado: %c\n", carta.estado);
-    printf("Código: %s\n", carta.codigo);
-    printf("Nome da Cidade: %s\n", carta.nomeCidade);
-    printf("População: %d\n", carta.populacao);
-    printf("Área: %.2f km²\n", carta.area);
-    printf("PIB: %.2f bilhões de reais\n", carta.pib);
-    printf("Número de Pontos Turísticos: %d\n", carta.pontosTuristicos);
-
-    // Exibindo a densidade populacional e o PIB per capita
-    printf("Densidade Populacional: %.2f hab/km²\n", carta.densidadePopulacional);
-    printf("PIB per Capita: %.2f reais\n", carta.pibPerCapita);
-
-    return carta;
+void compararCartas(struct CartaSuperTrunfo c1, struct CartaSuperTrunfo c2) {
+    printf("\nComparação de Cartas:\n");
+    printf("População: Carta %d venceu (%d)\n", c1.populacao > c2.populacao ? 1 : 2, c1.populacao > c2.populacao);
+    printf("Área: Carta %d venceu (%d)\n", c1.area > c2.area ? 1 : 2, c1.area > c2.area);
+    printf("PIB: Carta %d venceu (%d)\n", c1.pib > c2.pib ? 1 : 2, c1.pib > c2.pib);
+    printf("Pontos Turísticos: Carta %d venceu (%d)\n", c1.pontosTuristicos > c2.pontosTuristicos ? 1 : 2, c1.pontosTuristicos > c2.pontosTuristicos);
+    printf("Densidade Populacional: Carta %d venceu (%d)\n", c1.densidadePopulacional < c2.densidadePopulacional ? 1 : 2, c1.densidadePopulacional < c2.densidadePopulacional);
+    printf("PIB per Capita: Carta %d venceu (%d)\n", c1.pibPerCapita > c2.pibPerCapita ? 1 : 2, c1.pibPerCapita > c2.pibPerCapita);
+    printf("Super Poder: Carta %d venceu (%d)\n", c1.superPoder > c2.superPoder ? 1 : 2, c1.superPoder > c2.superPoder);
 }
 
 int main() {
     struct CartaSuperTrunfo carta1, carta2;
-
     printf("Insira os dados da primeira carta:\n");
     carta1 = lerCarta();
-
     printf("\nInsira os dados da segunda carta:\n");
     carta2 = lerCarta();
-
-    printf("\nInformações Cadastradas:\n");
-    carta1 = exibirCarta(carta1, 1);
-    carta2 = exibirCarta(carta2, 2);
-
+    compararCartas(carta1, carta2);
     return 0;
 }
